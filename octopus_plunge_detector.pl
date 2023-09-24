@@ -19,10 +19,7 @@ unless ( $res->is_success ) {
     exit 1;
 }
 
-my $data = JSON->new->utf8->decode( $res->content );
-
-use Data::Dumper;
-
+my $data   = JSON->new->utf8->decode( $res->content );
 my %plunge = ();
 
 foreach my $period ( @{ $data->{results} } ) {
@@ -35,6 +32,10 @@ foreach my $period ( @{ $data->{results} } ) {
         $plunge{$key}{price}    = $period->{value_inc_vat};
         $plunge{$key}{valid_to} = $period->{valid_to};
     }
+}
+
+if ( scalar keys %plunge == 0 ) {
+    exit 0;
 }
 
 foreach my $key ( sort keys %plunge ) {
