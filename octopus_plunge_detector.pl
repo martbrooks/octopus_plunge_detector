@@ -9,8 +9,11 @@ use LWP::UserAgent;
 my $OCTOPUS_API = "https://api.octopus.energy/v1";
 my $PRODUCT     = 'AGILE-FLEX-22-11-25/electricity-tariffs/E-1R-AGILE-FLEX-22-11-25-A';
 my $ua          = LWP::UserAgent->new;
+my $url         = "$OCTOPUS_API/products/$PRODUCT/standard-unit-rates/";
+my $check_pages = 3;
+my %plunge      = ();
+
 $ua->agent("OctopusPlungeDetector/0.1");
-my $url = "$OCTOPUS_API/products/$PRODUCT/standard-unit-rates/";
 
 while (1) {
     my $req = HTTP::Request->new( GET => "$url" );
@@ -21,8 +24,7 @@ while (1) {
         exit 1;
     }
 
-    my $data   = JSON->new->utf8->decode( $res->content );
-    my %plunge = ();
+    my $data = JSON->new->utf8->decode( $res->content );
 
     foreach my $period ( @{ $data->{results} } ) {
         if ( $period->{value_inc_vat} <= 0 ) {
@@ -35,15 +37,15 @@ while (1) {
         }
     }
 
-    if ( scalar keys %plunge == 0 ) {
-        exit 0;
-    }
-
-    foreach my $key ( sort keys %plunge ) {
-        print "$key -> $plunge{$key}{valid_to}: $plunge{$key}{price}\n";
-    }
-
     $url = $data->{next} // '';
-    last if $url eq '';
+    $check_pages--;
+    last if $url eq '' || $check_pages == 0;
 }
 
+if ( scalar keys %plunge == 0 ) {
+    exit 0;
+}
+
+foreach my $key ( sort keys %plunge ) {
+    print "$key -> $plunge{$key}{valid_to}: $plunge{$key}{price}\n";
+}
