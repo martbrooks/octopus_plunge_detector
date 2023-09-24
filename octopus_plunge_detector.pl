@@ -2,8 +2,9 @@
 
 use strict;
 use warnings;
-use LWP::UserAgent;
+use DateTime::Format::Strptime;
 use JSON;
+use LWP::UserAgent;
 
 my $OCTOPUS_API = "https://api.octopus.energy/v1";
 my $PRODUCT     = 'AGILE-FLEX-22-11-25/electricity-tariffs/E-1R-AGILE-FLEX-22-11-25-A';
@@ -26,7 +27,11 @@ my %plunge = ();
 
 foreach my $period ( @{ $data->{results} } ) {
     if ( $period->{value_inc_vat} <= 0 ) {
-        my $key = $period->{valid_from};
+        my $key    = $period->{valid_from};
+        my $format = DateTime::Format::Strptime->new( pattern => '%FT%T%z' );
+        my $dt     = $format->parse_datetime($key);
+        next if $dt < DateTime->now;
+
         $plunge{$key}{price}    = $period->{value_inc_vat};
         $plunge{$key}{valid_to} = $period->{valid_to};
     }
