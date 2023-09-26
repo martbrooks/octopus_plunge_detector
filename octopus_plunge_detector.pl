@@ -38,8 +38,8 @@ while (1) {
     }
 
     $url = $data->{next} // '';
-    $check_pages--;
     last if $url eq '' || $check_pages == 0;
+    $check_pages--;
 }
 
 if ( scalar keys %plunge == 0 ) {
