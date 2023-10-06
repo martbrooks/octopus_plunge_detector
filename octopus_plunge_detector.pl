@@ -28,12 +28,13 @@ while (1) {
 
     foreach my $period ( @{ $data->{results} } ) {
         if ( $period->{value_inc_vat} <= 0 ) {
-            my $key    = $period->{valid_from};
-            my $format = DateTime::Format::Strptime->new( pattern => '%FT%T%z' );
-            my $dt     = $format->parse_datetime($key);
+            my $key           = $period->{valid_from};
+            my $format        = DateTime::Format::Strptime->new( pattern => '%FT%T%z' );
+            my $dt            = $format->parse_datetime($key);
+            my $value_inc_vat = $period->{value_inc_vat};
             next if $dt < DateTime->now;
-            $plunge{$key}{price}    = $period->{value_inc_vat};
-            $plunge{$key}{valid_to} = $period->{valid_to};
+            $plunge{$key}{value_inc_vat} = sprintf( "%s%.2f", ( $value_inc_vat < 0 ? '-£' : '£', abs($value_inc_vat) ) );
+            $plunge{$key}{valid_to}      = $period->{valid_to};
         }
     }
 
@@ -47,5 +48,5 @@ if ( scalar keys %plunge == 0 ) {
 }
 
 foreach my $key ( sort keys %plunge ) {
-    print "$key -> $plunge{$key}{valid_to}: $plunge{$key}{price}\n";
+    print "$key -> $plunge{$key}{valid_to}: $plunge{$key}{value_inc_vat}\n";
 }
