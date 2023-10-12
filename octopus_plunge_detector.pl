@@ -33,7 +33,7 @@ while (1) {
             my $dt            = $format->parse_datetime($key);
             my $value_inc_vat = $period->{value_inc_vat};
             next if $dt < DateTime->now;
-            $plunge{$key}{value_inc_vat} = sprintf( "%s%.2f", ( $value_inc_vat < 0 ? '-£' : '£', abs($value_inc_vat) ) );
+            $plunge{$key}{value_inc_vat} = sprintf( "%.3fp", $value_inc_vat );
             $plunge{$key}{valid_to}      = $period->{valid_to};
         }
     }
